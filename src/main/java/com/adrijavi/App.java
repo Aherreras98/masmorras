@@ -33,7 +33,7 @@ public class App extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/adrijavi/vista/VistaCrearPersonaje.fxml"));
         Parent root = loader.load();
         
-        Scene escena = new Scene(root, 500, 600);
+        Scene escena = new Scene(root, 400, 500);
         
         primaryStage.setTitle("Creación de Personaje");
         primaryStage.setScene(escena);

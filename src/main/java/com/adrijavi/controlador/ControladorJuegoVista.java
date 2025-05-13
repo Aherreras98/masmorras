@@ -1,6 +1,8 @@
 package com.adrijavi.controlador;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.adrijavi.modelo.*;
 import com.adrijavi.observador.ObservadorJuego;
@@ -10,12 +12,16 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.input.KeyEvent;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
 
 public class ControladorJuegoVista implements ObservadorJuego {
     @FXML
@@ -26,13 +32,39 @@ public class ControladorJuegoVista implements ObservadorJuego {
     private Label labelOrdenTurnos;
     @FXML
     private Label labelTurnoActual;
+    @FXML
+    private ImageView imagenProtagonista;
+    @FXML
+    private Label labelInfoProtagonista;
+    @FXML
+    private VBox panelEnemigos;
     private Juego juego;
     private boolean mostrandoDialogoNivel = false;
+    private Map<String, Image> imagenesEnemigos;
+    private Image imagenProtagonistaCache;
 
     public void setJuego(Juego juego) {
         this.juego = juego;
         juego.añadirObservador(this);
+        precargarImagenes();
         actualizarVista();
+    }
+
+    private void precargarImagenes() {
+        imagenesEnemigos = new HashMap<>();
+        try {
+            // Precargar imagen del protagonista
+            imagenProtagonistaCache = new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/protagonista.png"));
+            imagenProtagonista.setImage(imagenProtagonistaCache);
+
+            // Precargar imágenes de enemigos
+            imagenesEnemigos.put("dragon", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/dragon.png")));
+            imagenesEnemigos.put("esqueleto", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/esqueleto.png")));
+            imagenesEnemigos.put("goblin", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/goblin.png")));
+            imagenesEnemigos.put("enemigo", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/enemigo.png")));
+        } catch (Exception e) {
+            System.err.println("Error al precargar imágenes: " + e.getMessage());
+        }
     }
 
     // Actualización completa de la vista
@@ -68,52 +100,6 @@ public class ControladorJuegoVista implements ObservadorJuego {
     }
 
     private void actualizarPanelInformacion() {
-        panelInformacion.getChildren().clear();
-        
-        // Información del protagonista
-        if (juego.getProtagonista() != null) {
-            Protagonista p = juego.getProtagonista();
-            Label infoP = new Label(String.format(
-                    "Protagonista: %s\nSalud: %d\nFuerza: %d\nDefensa: %d\nVelocidad: %d\nPercepción: %d",
-                    p.getNombre(), p.getSalud(), p.getFuerza(), p.getDefensa(), p.getVelocidad(), p.getPercepcion()));
-            infoP.setStyle("-fx-font-weight: bold;");
-            panelInformacion.getChildren().add(infoP);
-        }
-
-        // Separador
-        panelInformacion.getChildren().add(new Label("\nEnemigos:"));
-        
-        // Información de los enemigos
-        for (Enemigo enemigo : juego.getEnemigos()) {
-            if (enemigo.estaVivo()) {
-                Label infoE = new Label(String.format(
-                    "%s\nSalud: %d\nFuerza: %d\nDefensa: %d\nVelocidad: %d\nPercepción: %d",
-                    enemigo.getNombre(),
-                    enemigo.getSalud(),
-                    enemigo.getFuerza(),
-                    enemigo.getDefensa(),
-                    enemigo.getVelocidad(),
-                    enemigo.getPercepcion()
-                ));
-                infoE.setStyle("-fx-text-fill: red;");
-                panelInformacion.getChildren().add(infoE);
-            }
-        }
-
-        // Separador
-        panelInformacion.getChildren().add(new Label("\nOrden de Turnos:"));
-        
-        // Orden de turnos con más detalles
-        StringBuilder orden = new StringBuilder();
-        for (Personaje p : juego.getOrdenTurnos()) {
-            orden.append(String.format("%s (Vel: %d, Salud: %d)\n",
-                p.getNombre(),
-                p.getVelocidad(),
-                p.getSalud()));
-        }
-        labelOrdenTurnos.setText(orden.toString());
-        panelInformacion.getChildren().add(labelOrdenTurnos);
-
         // Turno actual
         Personaje personajeActual = juego.getPersonajeEnTurno();
         if (personajeActual != null) {
@@ -124,7 +110,70 @@ public class ControladorJuegoVista implements ObservadorJuego {
         } else {
             labelTurnoActual.setText("Turno actual: N/A");
         }
-        panelInformacion.getChildren().add(labelTurnoActual);
+        
+        // Información del protagonista
+        if (juego.getProtagonista() != null) {
+            Protagonista p = juego.getProtagonista();
+            labelInfoProtagonista.setText(
+                "Nombre: " + p.getNombre() + "\n" +
+                "Salud: " + p.getSalud() + "\n" +
+                "Fuerza: " + p.getFuerza() + "\n" +
+                "Defensa: " + p.getDefensa() + "\n" +
+                "Velocidad: " + p.getVelocidad() + "\n" +
+                "Percepción: " + p.getPercepcion()
+            );
+        }
+        
+        // Información de los enemigos
+        panelEnemigos.getChildren().clear();
+        for (Enemigo enemigo : juego.getEnemigos()) {
+            if (enemigo.estaVivo()) {
+                HBox contenedorEnemigo = new HBox(10);
+                contenedorEnemigo.setAlignment(Pos.CENTER_LEFT);
+                
+                // Obtener la imagen del enemigo desde el caché
+                String tipoEnemigo = "";
+                if (enemigo.getNombre().toLowerCase().contains("dragon")) {
+                    tipoEnemigo = "dragon";
+                } else if (enemigo.getNombre().toLowerCase().contains("esqueleto")) {
+                    tipoEnemigo = "esqueleto";
+                } else if (enemigo.getNombre().toLowerCase().contains("goblin")) {
+                    tipoEnemigo = "goblin";
+                } else {
+                    tipoEnemigo = "enemigo";
+                }
+                
+                ImageView imagenEnemigo = new ImageView(imagenesEnemigos.get(tipoEnemigo));
+                imagenEnemigo.setFitHeight(40);
+                imagenEnemigo.setFitWidth(40);
+                contenedorEnemigo.getChildren().add(imagenEnemigo);
+                
+                VBox infoEnemigo = new VBox(5);
+                Label nombreEnemigo = new Label(enemigo.getNombre());
+                nombreEnemigo.setStyle("-fx-font-weight: bold;");
+                Label statsEnemigo = new Label(String.format(
+                    "Salud: %d\nFuerza: %d\nDefensa: %d\nVelocidad: %d",
+                    enemigo.getSalud(),
+                    enemigo.getFuerza(),
+                    enemigo.getDefensa(),
+                    enemigo.getVelocidad()
+                ));
+                infoEnemigo.getChildren().addAll(nombreEnemigo, statsEnemigo);
+                contenedorEnemigo.getChildren().add(infoEnemigo);
+                
+                panelEnemigos.getChildren().add(contenedorEnemigo);
+            }
+        }
+        
+        // Orden de turnos
+        StringBuilder orden = new StringBuilder();
+        for (Personaje p : juego.getOrdenTurnos()) {
+            orden.append(String.format("%s (Vel: %d, Salud: %d)\n",
+                p.getNombre(),
+                p.getVelocidad(),
+                p.getSalud()));
+        }
+        labelOrdenTurnos.setText(orden.toString());
     }
 
     @Override

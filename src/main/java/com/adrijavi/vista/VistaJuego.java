@@ -8,6 +8,7 @@ import com.adrijavi.modelo.Enemigo;
 import com.adrijavi.modelo.Personaje;
 import com.adrijavi.observador.ObservadorJuego;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.layout.*;
 import javafx.scene.control.*;
@@ -35,15 +36,16 @@ public class VistaJuego extends BorderPane implements ObservadorJuego {
 
     private void configurarLayout() {
         gridTablero = new GridPane();
-        gridTablero.setHgap(2);
-        gridTablero.setVgap(2);
-        gridTablero.setPadding(new Insets(10));
+        gridTablero.setHgap(1);
+        gridTablero.setVgap(1);
+        gridTablero.setPadding(new Insets(2));
         this.setCenter(gridTablero);
 
-        panelInformacion = new VBox(10);
-        panelInformacion.setPadding(new Insets(10));
+        panelInformacion = new VBox(2);
+        panelInformacion.setPadding(new Insets(2));
+        panelInformacion.setMaxWidth(150);
         labelOrdenTurnos = new Label();
-        labelOrdenTurnos.setFont(new Font(16));
+        labelOrdenTurnos.setFont(new Font(12));
         panelInformacion.getChildren().add(labelOrdenTurnos);
         this.setRight(panelInformacion);
     }
