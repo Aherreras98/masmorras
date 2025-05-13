@@ -6,6 +6,7 @@ package com.adrijavi.modelo;
 public abstract class Personaje {
     protected String nombre;
     protected int salud;
+    protected int saludMaxima;
     protected int fuerza;
     protected int defensa;
     protected int velocidad;
@@ -16,6 +17,7 @@ public abstract class Personaje {
     public Personaje(String nombre, int salud, int fuerza, int defensa, int velocidad, int percepcion, int fila, int columna) {
         this.nombre = nombre;
         this.salud = salud;
+        this.saludMaxima = salud;
         this.fuerza = fuerza;
         this.defensa = defensa;
         this.velocidad = velocidad;
@@ -29,10 +31,16 @@ public abstract class Personaje {
     }
     public int getSalud() { return salud; }
     public void setSalud(int s) { salud = s; }
+    public int getSaludMaxima() { return saludMaxima; }
+    public void setSaludMaxima(int s) { saludMaxima = s; }
     public int getFuerza() { return fuerza; }
+    public void setFuerza(int f) { fuerza = f; }
     public int getDefensa() { return defensa; }
+    public void setDefensa(int d) { defensa = d; }
     public int getVelocidad() { return velocidad; }
+    public void setVelocidad(int v) { velocidad = v; }
     public int getPercepcion() { return percepcion; }
+    public void setPercepcion(int p) { percepcion = p; }
     
     public int getFila() { return fila; }
     public int getColumna() { return columna; }
@@ -56,5 +64,13 @@ public abstract class Personaje {
     
     public boolean estaVivo() {
         return salud > 0;
+    }
+
+    /**
+     * Restaura la salud del personaje a su valor máximo original.
+     */
+    public void restaurarSalud() {
+        this.saludMaxima = this.salud;
+        this.salud = this.saludMaxima;
     }
 }

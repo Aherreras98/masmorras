@@ -106,12 +106,8 @@ public class Juego {
 
         // Verificar si el nivel está completo
         if (esNivelCompleto()) {
-            System.out.println("[JUEGO] Nivel completado. Cargando siguiente nivel...");
-            try {
-                cargarSiguienteNivel();
-            } catch (IOException e) {
-                System.out.println("[JUEGO] Error al cargar el siguiente nivel: " + e.getMessage());
-            }
+            System.out.println("[JUEGO] Nivel completado.");
+            notificarObservadores();
             return;
         }
 
@@ -119,30 +115,40 @@ public class Juego {
         indiceTurnoActual = (indiceTurnoActual + 1) % ordenTurnos.size();
 
         // Depuración: Mostrar el personaje en turno
-        System.out.println("[JUEGO] Turno de: " + ordenTurnos.get(indiceTurnoActual).getNombre());
+        Personaje personajeEnTurno = ordenTurnos.get(indiceTurnoActual);
+        System.out.println("[JUEGO] Turno de: " + personajeEnTurno.getNombre());
 
         // Si el turno actual es de un enemigo, ejecutar su turno automáticamente
-        if (!(ordenTurnos.get(indiceTurnoActual) instanceof Protagonista)) {
-            ejecutarTurnoEnemigo(ordenTurnos.get(indiceTurnoActual));
+        if (personajeEnTurno instanceof Enemigo) {
+            System.out.println("[JUEGO] Ejecutando turno del enemigo: " + personajeEnTurno.getNombre());
+            ejecutarTurnoEnemigo(personajeEnTurno);
+            // Notificar a los observadores después de que el enemigo complete su turno
+            notificarObservadores();
+            // Avanzar automáticamente al siguiente turno después de que el enemigo actúe
+            siguienteTurno();
+        } else {
+            // Si es el turno del protagonista, solo notificar a los observadores
+            notificarObservadores();
         }
-
-        notificarObservadores();
     }
 
     public void inicializarOrdenTurnos() {
+        System.out.println("[JUEGO] Inicializando orden de turnos...");
         List<Personaje> nuevosTurnos = new ArrayList<>();
 
         // Protagonista
         if (protagonista != null && protagonista.estaVivo()) {
             nuevosTurnos.add(protagonista);
+            System.out.println("[JUEGO] Añadido protagonista a la lista de turnos");
         }
 
         // Enemigos vivos
-        nuevosTurnos.addAll(
-            enemigos.stream()
-                    .filter(Enemigo::estaVivo)
-                    .collect(Collectors.toList())
-        );
+        for (Enemigo enemigo : enemigos) {
+            if (enemigo.estaVivo()) {
+                nuevosTurnos.add(enemigo);
+                System.out.println("[JUEGO] Añadido enemigo " + enemigo.getNombre() + " a la lista de turnos");
+            }
+        }
 
         // Ordenar por velocidad descendente
         nuevosTurnos.sort((p1, p2) -> p2.getVelocidad() - p1.getVelocidad());
@@ -384,16 +390,37 @@ public class Juego {
         return enemigos.stream().noneMatch(Enemigo::estaVivo);
     }
 
-    public void cargarSiguienteNivel() throws IOException {
+    /**
+     * Carga el siguiente nivel cuando el jugador lo decide.
+     * @return true si se cargó el siguiente nivel, false si no hay más niveles
+     */
+    public boolean cargarSiguienteNivel() {
         nivelActual++;
         try {
             cargarTablero("mapa" + nivelActual + ".txt");
             cargarEnemigos("enemigos" + nivelActual + ".txt");
+            // Aumentar estadísticas del protagonista
+            if (protagonista != null) {
+                protagonista.setSalud(protagonista.getSalud() + 1);
+                protagonista.setFuerza(protagonista.getFuerza() + 1);
+                protagonista.setDefensa(protagonista.getDefensa() + 1);
+                protagonista.setVelocidad(protagonista.getVelocidad() + 1);
+                protagonista.setPercepcion(protagonista.getPercepcion() + 1);
+                protagonista.restaurarSalud();
+            }
+            // Limpiar la lista de turnos antes de inicializarla
+            ordenTurnos.clear();
             inicializarOrdenTurnos();
             System.out.println("[JUEGO] Nivel " + nivelActual + " cargado correctamente.");
+            return true;
         } catch (FileNotFoundException e) {
             System.out.println("[JUEGO] No se encontraron más niveles. ¡Has completado el juego!");
             nivelActual--; // Revertir el incremento si no hay más niveles
+            return false;
+        } catch (IOException e) {
+            System.out.println("[JUEGO] Error al cargar el siguiente nivel: " + e.getMessage());
+            nivelActual--; // Revertir el incremento si hay error
+            return false;
         }
     }
 
@@ -428,5 +455,9 @@ public class Juego {
 
     public void setProtagonista(Protagonista p) {
         this.protagonista = p;
+    }
+
+    public int getNivelActual() {
+        return nivelActual;
     }
 }

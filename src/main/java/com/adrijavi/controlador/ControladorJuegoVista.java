@@ -15,6 +15,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 public class ControladorJuegoVista implements ObservadorJuego {
     @FXML
@@ -26,6 +27,7 @@ public class ControladorJuegoVista implements ObservadorJuego {
     @FXML
     private Label labelTurnoActual;
     private Juego juego;
+    private boolean mostrandoDialogoNivel = false;
 
     public void setJuego(Juego juego) {
         this.juego = juego;
@@ -67,46 +69,98 @@ public class ControladorJuegoVista implements ObservadorJuego {
 
     private void actualizarPanelInformacion() {
         panelInformacion.getChildren().clear();
+        
+        // Información del protagonista
         if (juego.getProtagonista() != null) {
             Protagonista p = juego.getProtagonista();
             Label infoP = new Label(String.format(
-                    "Protagonista: %s\nSalud: %d\nFuerza: %d\nDefensa: %d",
-                    p.getNombre(), p.getSalud(), p.getFuerza(), p.getDefensa()));
+                    "Protagonista: %s\nSalud: %d\nFuerza: %d\nDefensa: %d\nVelocidad: %d\nPercepción: %d",
+                    p.getNombre(), p.getSalud(), p.getFuerza(), p.getDefensa(), p.getVelocidad(), p.getPercepcion()));
+            infoP.setStyle("-fx-font-weight: bold;");
             panelInformacion.getChildren().add(infoP);
         }
 
-        // Orden de turnos
-        StringBuilder orden = new StringBuilder("Orden de Turnos:\n");
-        for (Personaje p : juego.getOrdenTurnos()) {
-            orden.append(p.getNombre()).append(" (").append(p.getVelocidad()).append(")\n");
-        }
-        labelOrdenTurnos.setText(orden.toString());
-
-        // Turno actual
-        labelTurnoActual.setText("Turno actual: " +
-                (juego.getPersonajeEnTurno() != null
-                        ? juego.getPersonajeEnTurno().getNombre()
-                        : "N/A"));
-    }
-
-@Override
-public void alActualizarJuego() {
-    Platform.runLater(() -> {
-        actualizarVista();
-
-        // Verificar si el protagonista ha muerto
-        if (juego.getProtagonista() == null || !juego.getProtagonista().estaVivo()) {
-            mostrarGameOver();
-        } else if (juego.esNivelCompleto()) {
-            try {
-                juego.cargarSiguienteNivel();
-                actualizarVista();
-            } catch (IOException e) {
-                mostrarVictoriaFinal();
+        // Separador
+        panelInformacion.getChildren().add(new Label("\nEnemigos:"));
+        
+        // Información de los enemigos
+        for (Enemigo enemigo : juego.getEnemigos()) {
+            if (enemigo.estaVivo()) {
+                Label infoE = new Label(String.format(
+                    "%s\nSalud: %d\nFuerza: %d\nDefensa: %d\nVelocidad: %d\nPercepción: %d",
+                    enemigo.getNombre(),
+                    enemigo.getSalud(),
+                    enemigo.getFuerza(),
+                    enemigo.getDefensa(),
+                    enemigo.getVelocidad(),
+                    enemigo.getPercepcion()
+                ));
+                infoE.setStyle("-fx-text-fill: red;");
+                panelInformacion.getChildren().add(infoE);
             }
         }
-    });
-}
+
+        // Separador
+        panelInformacion.getChildren().add(new Label("\nOrden de Turnos:"));
+        
+        // Orden de turnos con más detalles
+        StringBuilder orden = new StringBuilder();
+        for (Personaje p : juego.getOrdenTurnos()) {
+            orden.append(String.format("%s (Vel: %d, Salud: %d)\n",
+                p.getNombre(),
+                p.getVelocidad(),
+                p.getSalud()));
+        }
+        labelOrdenTurnos.setText(orden.toString());
+        panelInformacion.getChildren().add(labelOrdenTurnos);
+
+        // Turno actual
+        Personaje personajeActual = juego.getPersonajeEnTurno();
+        if (personajeActual != null) {
+            labelTurnoActual.setText(String.format("Turno actual: %s (Salud: %d)",
+                personajeActual.getNombre(),
+                personajeActual.getSalud()));
+            labelTurnoActual.setStyle("-fx-font-weight: bold;");
+        } else {
+            labelTurnoActual.setText("Turno actual: N/A");
+        }
+        panelInformacion.getChildren().add(labelTurnoActual);
+    }
+
+    @Override
+    public void alActualizarJuego() {
+        Platform.runLater(() -> {
+            actualizarVista();
+
+            // Verificar si el protagonista ha muerto
+            if (juego.getProtagonista() == null || !juego.getProtagonista().estaVivo()) {
+                mostrarGameOver();
+            } else if (juego.esNivelCompleto() && !mostrandoDialogoNivel) {
+                mostrandoDialogoNivel = true;
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Nivel Completado");
+                alert.setHeaderText("¡Has completado el nivel " + juego.getNivelActual() + "!");
+                alert.setContentText("¿Quieres continuar al siguiente nivel?");
+
+                ButtonType buttonTypeContinuar = new ButtonType("Continuar");
+                ButtonType buttonTypeTerminar = new ButtonType("Terminar Partida");
+                alert.getButtonTypes().setAll(buttonTypeContinuar, buttonTypeTerminar);
+
+                alert.showAndWait().ifPresent(response -> {
+                    if (response == buttonTypeContinuar) {
+                        if (!juego.cargarSiguienteNivel()) {
+                            mostrarVictoriaFinal();
+                        } else {
+                            actualizarVista();
+                        }
+                    } else {
+                        mostrarVictoriaFinal();
+                    }
+                    mostrandoDialogoNivel = false;
+                });
+            }
+        });
+    }
 
     private void mostrarAlerta(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -118,16 +172,11 @@ public void alActualizarJuego() {
     }
 
     private void mostrarVictoriaFinal() {
-        mostrarAlerta("¡Victoria!", "¡Has completado todos los niveles!");
+        mostrarAlerta("¡Victoria!", "¡Has completado el juego!");
     }
 
     private void mostrarGameOver() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Game Over");
-        alert.setHeaderText(null);
-        alert.setContentText("El protagonista ha muerto. Fin del juego.");
-        alert.showAndWait();
-        Platform.exit(); // Cerrar la aplicación
+        mostrarAlerta("Game Over", "¡Has sido derrotado!");
     }
 
     public EventHandler<KeyEvent> getManejadorEventoTeclado() {

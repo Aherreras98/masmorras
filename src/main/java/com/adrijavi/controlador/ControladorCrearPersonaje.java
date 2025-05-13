@@ -2,6 +2,8 @@ package com.adrijavi.controlador;
 
 import com.adrijavi.modelo.Juego;
 import com.adrijavi.modelo.Protagonista;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
 
 import java.io.IOException;
 
@@ -26,12 +28,22 @@ public class ControladorCrearPersonaje {
     @FXML
     private Button btnSaludMas, btnSaludMenos, btnFuerzaMas, btnFuerzaMenos, btnDefensaMas, btnDefensaMenos,
             btnVelocidadMas, btnVelocidadMenos, btnPercepcionMas, btnPercepcionMenos, btnIniciar;
+    @FXML
+    private ImageView imgProtagonista;
 
-    private int puntosRestantes = 15; // Cambiado a 15 porque cada estadística comienza con 1 punto.
-    private int salud = 1, fuerza = 1, defensa = 1, velocidad = 1, percepcion = 1;
+    private int puntosRestantes = 15; 
+    private int salud = 5, fuerza = 1, defensa = 1, velocidad = 1, percepcion = 1;
 
     @FXML
     public void initialize() {
+        // Cargar la imagen del protagonista
+        try {
+            Image imagen = new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/protagonista.png"));
+            imgProtagonista.setImage(imagen);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Inicializar etiquetas con los valores base
         lblSalud.setText(String.valueOf(salud));
         lblFuerza.setText(String.valueOf(fuerza));
@@ -93,7 +105,7 @@ public class ControladorCrearPersonaje {
     private void decrementarEstadistica(String estadistica) {
         switch (estadistica) {
             case "salud":
-                if (salud > 1) { // Asegurarse de que la salud no baje de 1
+                if (salud > 5) { // Asegurarse de que la salud no baje de 5
                     salud--;
                     lblSalud.setText(String.valueOf(salud));
                     puntosRestantes++;
@@ -157,7 +169,7 @@ public class ControladorCrearPersonaje {
                 ControladorJuegoVista controladorJuegoVista = loader.getController();
                 controladorJuegoVista.setJuego(juego);
 
-                Scene escenaJuego = new Scene(rootJuego, 800, 600);
+                Scene escenaJuego = new Scene(rootJuego, 1200, 800);
                 escenaJuego.setOnKeyPressed(controladorJuegoVista.getManejadorEventoTeclado());
 
                 Stage stage = (Stage) btnIniciar.getScene().getWindow();

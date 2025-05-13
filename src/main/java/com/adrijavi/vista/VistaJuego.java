@@ -8,17 +8,23 @@ import com.adrijavi.modelo.Enemigo;
 import com.adrijavi.modelo.Personaje;
 import com.adrijavi.observador.ObservadorJuego;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.layout.*;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import java.net.URL;
+import java.io.File;
+import java.io.InputStream;
 
 public class VistaJuego extends BorderPane implements ObservadorJuego {
     private Juego juego;
     private GridPane gridTablero;
     private VBox panelInformacion;
     private Label labelOrdenTurnos;
-    
+
     public VistaJuego(Juego juego) {
         this.juego = juego;
         this.juego.añadirObservador(this);
@@ -26,14 +32,14 @@ public class VistaJuego extends BorderPane implements ObservadorJuego {
         actualizarTablero();
         actualizarPanelInformacion();
     }
-    
-    private void configurarLayout(){
+
+    private void configurarLayout() {
         gridTablero = new GridPane();
         gridTablero.setHgap(2);
         gridTablero.setVgap(2);
         gridTablero.setPadding(new Insets(10));
         this.setCenter(gridTablero);
-        
+
         panelInformacion = new VBox(10);
         panelInformacion.setPadding(new Insets(10));
         labelOrdenTurnos = new Label();
@@ -41,76 +47,65 @@ public class VistaJuego extends BorderPane implements ObservadorJuego {
         panelInformacion.getChildren().add(labelOrdenTurnos);
         this.setRight(panelInformacion);
     }
-    
-    /**
-     * Actualiza la representación gráfica del tablero según el estado del juego.
-     */
-    public void actualizarTablero(){
+
+    public void actualizarTablero() {
         gridTablero.getChildren().clear();
         Celda[][] celdas = juego.getTablero();
-        if(celdas == null) return;
-        for (int f = 0; f < celdas.length; f++){
-            for (int c = 0; c < celdas[0].length; c++){
-                Celda celda = celdas[f][c];
+        if (celdas == null) return;
+        for (int f = 0; f < celdas.length; f++) {
+            final int fila = f;
+            for (int c = 0; c < celdas[0].length; c++) {
+                final int columna = c;
+                Celda celda = celdas[fila][columna];
                 StackPane panelCelda = new StackPane();
-                panelCelda.setPrefSize(40, 40);
-                if(celda.getTipo() == TipoCelda.PARED){
+                panelCelda.setPrefSize(60, 60);
+                if (celda.getTipo() == TipoCelda.PARED) {
                     panelCelda.setStyle("-fx-background-color: grey; -fx-border-color: black;");
                 } else {
                     panelCelda.setStyle("-fx-background-color: white; -fx-border-color: black;");
                 }
-                // Se coloca un indicador (letra) si hay un personaje en la celda.
-                if(juego.getProtagonista() != null && juego.getProtagonista().getFila() == f && 
-                   juego.getProtagonista().getColumna() == c && juego.getProtagonista().estaVivo()){
+
+                // Mostrar protagonista como texto
+                if (juego.getProtagonista() != null && juego.getProtagonista().getFila() == fila &&
+                        juego.getProtagonista().getColumna() == columna && juego.getProtagonista().estaVivo()) {
                     Label etiqueta = new Label("P");
                     etiqueta.setTextFill(Color.BLUE);
                     panelCelda.getChildren().add(etiqueta);
-                } else {
-                    for (Enemigo enemigo : juego.getEnemigos()){
-                        if(enemigo.getFila() == f && enemigo.getColumna() == c && enemigo.estaVivo()){
-                            Label etiqueta = new Label("E");
-                            etiqueta.setTextFill(Color.RED);
-                            panelCelda.getChildren().add(etiqueta);
-                        }
-                    }
                 }
-                gridTablero.add(panelCelda, c, f);
+                gridTablero.add(panelCelda, columna, fila);
             }
         }
     }
-    
-    /**
-     * Actualiza el panel de información lateral mostrando estadísticas y el orden de turnos.
-     */
-    public void actualizarPanelInformacion(){
+
+    public void actualizarPanelInformacion() {
         panelInformacion.getChildren().clear();
-        if(juego.getProtagonista() != null){
+        if (juego.getProtagonista() != null) {
             Protagonista p = juego.getProtagonista();
             Label infoP = new Label("Protagonista: " + p.getNombre() +
-            "\nSalud: " + p.getSalud() +
-            "\nFuerza: " + p.getFuerza() +
-            "\nDefensa: " + p.getDefensa() +
-            "\nVelocidad: " + p.getVelocidad() +
-            "\nPercepción: " + p.getPercepcion());
+                    "\nSalud: " + p.getSalud() +
+                    "\nFuerza: " + p.getFuerza() +
+                    "\nDefensa: " + p.getDefensa() +
+                    "\nVelocidad: " + p.getVelocidad() +
+                    "\nPercepción: " + p.getPercepcion());
             panelInformacion.getChildren().add(infoP);
         }
         Label etiquetaEnemigos = new Label("Enemigos:");
         panelInformacion.getChildren().add(etiquetaEnemigos);
-        if(juego.getEnemigos() != null && !juego.getEnemigos().isEmpty()){
-            for (Enemigo enemigo : juego.getEnemigos()){
+        if (juego.getEnemigos() != null && !juego.getEnemigos().isEmpty()) {
+            for (Enemigo enemigo : juego.getEnemigos()) {
                 Label etiquetaEnemigo = new Label(enemigo.getNombre() + " -- Salud: " + enemigo.getSalud());
                 panelInformacion.getChildren().add(etiquetaEnemigo);
             }
         }
         StringBuilder sb = new StringBuilder();
         sb.append("Orden de Turnos:\n");
-        for(Personaje p : juego.getOrdenTurnos()){
+        for (Personaje p : juego.getOrdenTurnos()) {
             sb.append(p.getNombre()).append(" (").append(p.getVelocidad()).append(")\n");
         }
         labelOrdenTurnos = new Label(sb.toString());
         panelInformacion.getChildren().add(labelOrdenTurnos);
     }
-    
+
     @Override
     public void alActualizarJuego() {
         actualizarTablero();
