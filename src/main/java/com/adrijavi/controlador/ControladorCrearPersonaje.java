@@ -1,5 +1,6 @@
 package com.adrijavi.controlador;
 
+import com.adrijavi.modelo.Juego;
 import com.adrijavi.modelo.Protagonista;
 
 import java.io.IOException;

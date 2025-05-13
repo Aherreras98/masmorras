@@ -39,5 +39,11 @@ public class ControladorJuego implements ObservadorJuego {
             }
         };
     }
+
+    @Override
+    public void alActualizarJuego() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'alActualizarJuego'");
+    }
     
 }
