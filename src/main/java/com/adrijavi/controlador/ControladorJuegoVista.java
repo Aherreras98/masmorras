@@ -1,6 +1,5 @@
 package com.adrijavi.controlador;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,6 +60,7 @@ public class ControladorJuegoVista implements ObservadorJuego {
             imagenesEnemigos.put("dragon", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/dragon.png")));
             imagenesEnemigos.put("esqueleto", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/esqueleto.png")));
             imagenesEnemigos.put("goblin", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/goblin.png")));
+            imagenesEnemigos.put("rey mono", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/rey_mono.png")));
             imagenesEnemigos.put("enemigo", new Image(getClass().getResourceAsStream("/com/adrijavi/recursos/enemigo.png")));
         } catch (Exception e) {
             System.err.println("Error al precargar imágenes: " + e.getMessage());
@@ -82,16 +82,30 @@ public class ControladorJuegoVista implements ObservadorJuego {
         for (int f = 0; f < celdas.length; f++) {
             for (int c = 0; c < celdas[0].length; c++) {
                 StackPane panelCelda = new StackPane();
-                panelCelda.setPrefSize(40, 40);
-                panelCelda.setStyle(celdas[f][c].getTipo() == TipoCelda.PARED
-                        ? "-fx-background-color: grey;"
-                        : "-fx-background-color: white;");
+                panelCelda.setPrefSize(50, 50);
+                
+                // Estilo base para todas las celdas
+                String estiloBase = "-fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 3, 0, 0, 0);";
+                
+                // Estilo específico según el tipo de celda
+                if (celdas[f][c].getTipo() == TipoCelda.PARED) {
+                    panelCelda.setStyle(estiloBase + " -fx-background-color: linear-gradient(to bottom, #4A3728, #2C1810); -fx-border-color: #8B4513; -fx-border-width: 2;");
+                } else {
+                    panelCelda.setStyle(estiloBase + " -fx-background-color: linear-gradient(to bottom, #D2B48C, #A0522D); -fx-border-color: #8B4513; -fx-border-width: 1;");
+                }
 
-                // Mostrar personajes
+                // Mostrar personajes con mejor estilo
                 Personaje personaje = juego.obtenerPersonajeEn(f, c);
                 if (personaje != null) {
                     Label etiqueta = new Label(personaje instanceof Protagonista ? "P" : "E");
-                    etiqueta.setTextFill(personaje instanceof Protagonista ? Color.BLUE : Color.RED);
+                    etiqueta.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 2, 0, 0, 0);");
+                    
+                    if (personaje instanceof Protagonista) {
+                        etiqueta.setTextFill(Color.rgb(65, 105, 225)); // Azul real
+                    } else {
+                        etiqueta.setTextFill(Color.rgb(220, 20, 60)); // Rojo carmesí
+                    }
+                    
                     panelCelda.getChildren().add(etiqueta);
                 }
                 gridTablero.add(panelCelda, c, f);
@@ -103,10 +117,10 @@ public class ControladorJuegoVista implements ObservadorJuego {
         // Turno actual
         Personaje personajeActual = juego.getPersonajeEnTurno();
         if (personajeActual != null) {
-            labelTurnoActual.setText(String.format("Turno actual: %s (Salud: %d)",
+            labelTurnoActual.setText(String.format("Turno actual: %s\nSalud: %d", 
                 personajeActual.getNombre(),
                 personajeActual.getSalud()));
-            labelTurnoActual.setStyle("-fx-font-weight: bold;");
+            labelTurnoActual.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: white;");
         } else {
             labelTurnoActual.setText("Turno actual: N/A");
         }
@@ -115,12 +129,14 @@ public class ControladorJuegoVista implements ObservadorJuego {
         if (juego.getProtagonista() != null) {
             Protagonista p = juego.getProtagonista();
             labelInfoProtagonista.setText(
-                "Nombre: " + p.getNombre() + "\n" +
-                "Salud: " + p.getSalud() + "\n" +
-                "Fuerza: " + p.getFuerza() + "\n" +
-                "Defensa: " + p.getDefensa() + "\n" +
-                "Velocidad: " + p.getVelocidad() + "\n" +
-                "Percepción: " + p.getPercepcion()
+                String.format("Nombre: %s\nSalud: %d\nFuerza: %d\nDefensa: %d\nVelocidad: %d\nPercepción: %d",
+                    p.getNombre(),
+                    p.getSalud(),
+                    p.getFuerza(),
+                    p.getDefensa(),
+                    p.getVelocidad(),
+                    p.getPercepcion()
+                )
             );
         }
         
@@ -130,6 +146,7 @@ public class ControladorJuegoVista implements ObservadorJuego {
             if (enemigo.estaVivo()) {
                 HBox contenedorEnemigo = new HBox(10);
                 contenedorEnemigo.setAlignment(Pos.CENTER_LEFT);
+                contenedorEnemigo.setStyle("-fx-background-color: rgba(0,0,0,0.2); -fx-padding: 10; -fx-background-radius: 5;");
                 
                 // Obtener la imagen del enemigo desde el caché
                 String tipoEnemigo = "";
@@ -139,18 +156,29 @@ public class ControladorJuegoVista implements ObservadorJuego {
                     tipoEnemigo = "esqueleto";
                 } else if (enemigo.getNombre().toLowerCase().contains("goblin")) {
                     tipoEnemigo = "goblin";
+                } else if (enemigo.getNombre().toLowerCase().contains("rey mono")) {
+                    tipoEnemigo = "rey mono";
                 } else {
                     tipoEnemigo = "enemigo";
                 }
                 
                 ImageView imagenEnemigo = new ImageView(imagenesEnemigos.get(tipoEnemigo));
-                imagenEnemigo.setFitHeight(40);
-                imagenEnemigo.setFitWidth(40);
+                if (tipoEnemigo.equals("rey mono")) {
+                    imagenEnemigo.setFitHeight(200);
+                    imagenEnemigo.setFitWidth(200);
+                    contenedorEnemigo.setStyle("-fx-background-color: rgba(0,0,0,0.3); -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 0);");
+                } else {
+                    imagenEnemigo.setFitHeight(50);
+                    imagenEnemigo.setFitWidth(50);
+                    contenedorEnemigo.setStyle("-fx-background-color: rgba(0,0,0,0.2); -fx-padding: 10; -fx-background-radius: 5;");
+                }
+                imagenEnemigo.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 5, 0, 0, 0);");
                 contenedorEnemigo.getChildren().add(imagenEnemigo);
                 
                 VBox infoEnemigo = new VBox(5);
                 Label nombreEnemigo = new Label(enemigo.getNombre());
-                nombreEnemigo.setStyle("-fx-font-weight: bold;");
+                nombreEnemigo.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #FFD700; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 2, 0, 0, 0);");
+                
                 Label statsEnemigo = new Label(String.format(
                     "Salud: %d\nFuerza: %d\nDefensa: %d\nVelocidad: %d",
                     enemigo.getSalud(),
@@ -158,6 +186,8 @@ public class ControladorJuegoVista implements ObservadorJuego {
                     enemigo.getDefensa(),
                     enemigo.getVelocidad()
                 ));
+                statsEnemigo.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+                
                 infoEnemigo.getChildren().addAll(nombreEnemigo, statsEnemigo);
                 contenedorEnemigo.getChildren().add(infoEnemigo);
                 

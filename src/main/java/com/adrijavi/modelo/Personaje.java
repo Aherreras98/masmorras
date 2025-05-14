@@ -51,17 +51,18 @@ public abstract class Personaje {
     }
     
     /**
-     * Ataque sencillo: daño = fuerza atacante – defensa defensor.
+     * Recibe daño y actualiza la salud del personaje.
+     * @param dano Cantidad de daño a recibir
      */
-    public void atacar(Personaje objetivo) {
-        int danio = this.fuerza - objetivo.defensa;
-        if (danio < 1) {
-            danio = 1;
-        }
-        objetivo.salud -= danio;
-        System.out.println(this.nombre + " ataca a " + objetivo.nombre + " causando " + danio + " puntos de daño.");
+    public void recibirDano(int dano) {
+        int danoReal = Math.max(1, dano - defensa); // El daño mínimo es 1
+        salud = Math.max(0, salud - danoReal);
     }
     
+    /**
+     * Verifica si el personaje está vivo.
+     * @return true si el personaje está vivo, false si está muerto
+     */
     public boolean estaVivo() {
         return salud > 0;
     }
@@ -72,5 +73,17 @@ public abstract class Personaje {
     public void restaurarSalud() {
         this.saludMaxima = this.salud;
         this.salud = this.saludMaxima;
+    }
+
+    /**
+     * Ataque sencillo: daño = fuerza atacante – defensa defensor.
+     */
+    public void atacar(Personaje objetivo) {
+        int danio = this.fuerza - objetivo.defensa;
+        if (danio < 1) {
+            danio = 1;
+        }
+        objetivo.salud -= danio;
+        System.out.println(this.nombre + " ataca a " + objetivo.nombre + " causando " + danio + " puntos de daño.");
     }
 }

@@ -7,7 +7,6 @@ import javafx.scene.image.Image;
 
 import java.io.IOException;
 
-import com.adrijavi.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;

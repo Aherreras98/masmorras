@@ -96,3 +96,4 @@ public class VistaCrearPersonaje {
         return spinner;
     }
 }
+

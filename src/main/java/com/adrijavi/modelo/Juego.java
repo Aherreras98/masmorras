@@ -3,7 +3,6 @@ package com.adrijavi.modelo;
 import com.adrijavi.observador.ObservadorJuego;
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Juego {
     private Celda[][] tablero;
