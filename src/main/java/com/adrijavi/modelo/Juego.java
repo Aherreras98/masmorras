@@ -4,6 +4,17 @@ import com.adrijavi.observador.ObservadorJuego;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Clase que representa la lógica principal del juego.
+ * 
+ * Gestiona el tablero, los personajes, los turnos, y la interacción entre
+ * ellos.
+ * También incluye la funcionalidad para cargar datos desde archivos y manejar
+ * la progresión de niveles.
+ * 
+ * @author Adrián Herrera y Javier Villar
+ * @version 1.0
+ */
 public class Juego {
     private Celda[][] tablero;
     private int filas;
@@ -15,6 +26,10 @@ public class Juego {
     private int indiceTurnoActual = 0;
     private int nivelActual = 1;
 
+    /**
+     * Constructor de la clase Juego.
+     * Inicializa las listas de observadores, enemigos y turnos.
+     */
     public Juego() {
         observadores = new ArrayList<>();
         enemigos = new ArrayList<>();
@@ -24,7 +39,11 @@ public class Juego {
     // ================== MÉTODOS DE CARGA ==================
     /**
      * Carga el tablero desde un archivo de texto.
-     * Formato: '#' para paredes, '.' para suelos.
+     * 
+     * El archivo debe usar '#' para paredes y '.' para suelos.
+     * 
+     * @param nombreArchivo Nombre del archivo que contiene el tablero.
+     * @throws IOException Si ocurre un error al leer el archivo.
      */
     public void cargarTablero(String nombreArchivo) throws IOException {
         // Obtener la ruta del archivo desde resources
@@ -57,7 +76,12 @@ public class Juego {
 
     /**
      * Carga enemigos desde un archivo.
-     * Formato: nombre,fila,columna,salud,fuerza,defensa,velocidad,percepcion
+     * 
+     * El archivo debe tener el formato:
+     * nombre,fila,columna,salud,fuerza,defensa,velocidad,percepcion
+     * 
+     * @param nombreArchivo Nombre del archivo que contiene los enemigos.
+     * @throws IOException Si ocurre un error al leer el archivo.
      */
     public void cargarEnemigos(String nombreArchivo) throws IOException {
         // Obtener la ruta del archivo desde resources
@@ -90,6 +114,11 @@ public class Juego {
     }
 
     // ================== LÓGICA DE TURNOS ==================
+        /**
+     * Avanza al siguiente turno del juego.
+     * 
+     * Verifica si el protagonista está vivo y si el nivel está completo antes de avanzar.
+     */
     public void siguienteTurno() {
         if (ordenTurnos.isEmpty()) {
             System.out.println("[JUEGO] ¡Todos los personajes han muerto!");
@@ -131,6 +160,11 @@ public class Juego {
         }
     }
 
+    /**
+     * Inicializa el orden de turnos de los personajes.
+     * 
+     * Añade al protagonista y a los enemigos vivos a la lista de turnos y los ordena por velocidad.
+     */
     public void inicializarOrdenTurnos() {
         System.out.println("[JUEGO] Inicializando orden de turnos...");
         List<Personaje> nuevosTurnos = new ArrayList<>();
@@ -172,7 +206,12 @@ public class Juego {
         }
     }
 
-    // MOVIMIENTO Y COMBATE 
+    // MOVIMIENTO Y COMBATE
+        /**
+     * Mueve al protagonista en la dirección especificada.
+     * 
+     * @param direccion La dirección en la que se desea mover al protagonista.
+     */
     public void moverProtagonista(String direccion) {
         if (esJuegoTerminado() || !(getPersonajeEnTurno() instanceof Protagonista))
             return;
@@ -211,6 +250,13 @@ public class Juego {
         siguienteTurno();
     }
 
+    /**
+     * Intenta mover un personaje a una nueva posición.
+     * 
+     * @param personaje El personaje que se desea mover.
+     * @param nuevaFila La fila de la nueva posición.
+     * @param nuevaCol La columna de la nueva posición.
+     */
     public void intentarMovimiento(Personaje personaje, int nuevaFila, int nuevaCol) {
         // Validar límites del tablero
         if (nuevaFila < 0 || nuevaFila >= filas || nuevaCol < 0 || nuevaCol >= columnas) {
@@ -256,7 +302,8 @@ public class Juego {
         }
         // Caso 2: Celda vacía
         else {
-            System.out.println("[MOVIMIENTO] " + personaje.getNombre() + " se mueve a (" + nuevaFila + ", " + nuevaCol + ")");
+            System.out.println(
+                    "[MOVIMIENTO] " + personaje.getNombre() + " se mueve a (" + nuevaFila + ", " + nuevaCol + ")");
             personaje.setPosicion(nuevaFila, nuevaCol);
         }
 
@@ -264,6 +311,11 @@ public class Juego {
     }
 
     // ================== LÓGICA DE ENEMIGOS ==================
+    /**
+     * Ejecuta el turno de los enemigos.
+     * 
+     * Verifica si el protagonista está vivo antes de proceder.
+     */
     public void turnoEnemigos() {
         System.out.println("\n=== TURNO ENEMIGOS ===");
 
@@ -289,6 +341,11 @@ public class Juego {
         System.out.println("[DEPURACIÓN] Turno de enemigos completado.");
     }
 
+    /**
+     * Ejecuta el turno de un enemigo específico.
+     * 
+     * @param personaje El enemigo cuyo turno se va a ejecutar.
+     */
     private void ejecutarTurnoEnemigo(Personaje personaje) {
         if (!(personaje instanceof Enemigo)) {
             return;
@@ -349,10 +406,18 @@ public class Juego {
     }
 
     // ================== OBSERVADORES ==================
+        /**
+     * Añade un observador al juego.
+     * 
+     * @param observador El observador que se desea añadir.
+     */
     public void añadirObservador(ObservadorJuego observador) {
         observadores.add(observador);
     }
 
+    /**
+     * Notifica a todos los observadores sobre un cambio en el juego.
+     */
     private void notificarObservadores() {
         for (ObservadorJuego obs : observadores) {
             obs.alActualizarJuego();
@@ -360,6 +425,13 @@ public class Juego {
     }
 
     // ================== GETTERS & HELPERS ==================
+    /**
+     * Obtiene el personaje en una celda específica.
+     * 
+     * @param f Fila de la celda.
+     * @param c Columna de la celda.
+     * @return El personaje en la celda, o null si está vacía.
+     */
     public Personaje obtenerPersonajeEn(int f, int c) {
         // Verificar protagonista
         if (protagonista != null
@@ -381,16 +453,27 @@ public class Juego {
         return null; // Celda vacía
     }
 
+    /**
+     * Verifica si el juego ha terminado.
+     * 
+     * @return true si el juego ha terminado, false en caso contrario.
+     */
     public boolean esJuegoTerminado() {
         return protagonista == null || !protagonista.estaVivo();
     }
 
+    /**
+     * Verifica si el nivel está completo.
+     * 
+     * @return true si todos los enemigos están muertos, false en caso contrario.
+     */
     public boolean esNivelCompleto() {
         return enemigos.stream().noneMatch(Enemigo::estaVivo);
     }
 
     /**
      * Carga el siguiente nivel cuando el jugador lo decide.
+     * 
      * @return true si se cargó el siguiente nivel, false si no hay más niveles
      */
     public boolean cargarSiguienteNivel() {
@@ -424,38 +507,83 @@ public class Juego {
     }
 
     // ================== GETTERS & SETTERS ==================
+    /**
+     * Devuelve el tablero del juego.
+     * 
+     * @return El tablero del juego.
+     */
     public Celda[][] getTablero() {
         return tablero;
     }
 
+    /**
+     * Devuelve el número de filas del tablero.
+     * 
+     * @return El número de filas.
+     */
     public int getFilas() {
         return filas;
     }
 
+    /**
+     * Devuelve el número de columnas del tablero.
+     * 
+     * @return El número de columnas.
+     */
     public int getColumnas() {
         return columnas;
     }
 
+    /**
+     * Devuelve el protagonista del juego.
+     * 
+     * @return El protagonista.
+     */
     public Protagonista getProtagonista() {
         return protagonista;
     }
 
+    /**
+     * Devuelve la lista de enemigos.
+     * 
+     * @return La lista de enemigos.
+     */
     public List<Enemigo> getEnemigos() {
         return enemigos;
     }
 
+    /**
+     * Devuelve la lista de observadores.
+     * 
+     * @return La lista de observadores.
+     */
     public List<Personaje> getOrdenTurnos() {
         return ordenTurnos;
     }
 
+    /**
+     * Devuelve el índice del turno actual.
+     * 
+     * @return El índice del turno actual.
+     */
     public Personaje getPersonajeEnTurno() {
         return ordenTurnos.isEmpty() ? null : ordenTurnos.get(indiceTurnoActual);
     }
 
+    /**
+     * Establece el protagonista del juego.
+     * 
+     * @param p El protagonista a establecer.
+     */
     public void setProtagonista(Protagonista p) {
         this.protagonista = p;
     }
 
+    /**
+     * Devuelve el nivel actual del juego.
+     * 
+     * @return El nivel actual.
+     */
     public int getNivelActual() {
         return nivelActual;
     }

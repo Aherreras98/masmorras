@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"com.adrijavi","l":"com.adrijavi"},{"m":"com.adrijavi","l":"com.adrijavi.controlador"},{"m":"com.adrijavi","l":"com.adrijavi.modelo"},{"m":"com.adrijavi","l":"com.adrijavi.observador"},{"m":"com.adrijavi","l":"com.adrijavi.vista"}];updateSearchResults();

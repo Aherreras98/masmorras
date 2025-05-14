@@ -27,8 +27,33 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.scene.control.DialogPane;
-import javafx.scene.control.Button;
 
+/**
+ * Controlador de la vista principal del juego.
+ * Esta clase gestiona la interacción entre el modelo del juego y la interfaz gráfica.
+ * Implementa la interfaz {@link ObservadorJuego} para actualizar la vista en respuesta
+ * a los cambios en el estado del juego.
+ *
+ * Funcionalidades principales:
+ * - Actualización del tablero de juego en la interfaz gráfica.
+ * - Gestión de la información del protagonista y los enemigos.
+ * - Manejo de eventos de teclado para mover al protagonista.
+ * - Visualización de diálogos de nivel completado, victoria final y "Game Over".
+ *
+ * Componentes principales de la interfaz:
+ * - {@link GridPane} para representar el tablero de juego.
+ * - {@link VBox} y {@link Label} para mostrar información del protagonista y enemigos.
+ * - {@link ImageView} para mostrar imágenes de los personajes.
+ *
+ * Métodos destacados:
+ * - {@link #actualizarTablero()} para actualizar el tablero de juego.
+ * - {@link #actualizarPanelInformacion()} para mostrar información del turno actual y los personajes.
+ * - {@link #getManejadorEventoTeclado()} para manejar los eventos de teclado.
+ * - {@link #mostrarGameOver()} y {@link #mostrarVictoriaFinal()} para mostrar diálogos al finalizar el juego.
+ *
+ * @author Adrián Herrera y Javier Villar
+ * @version 1.0
+ */
 public class ControladorJuegoVista implements ObservadorJuego {
     @FXML
     private GridPane gridTablero;
@@ -81,6 +106,23 @@ public class ControladorJuegoVista implements ObservadorJuego {
         actualizarPanelInformacion();
     }
 
+    /**
+     * Actualiza el tablero de juego en la interfaz gráfica.
+     * Este método limpia el contenido actual del tablero y lo reconstruye
+     * basándose en el estado actual del juego. Cada celda del tablero se
+     * representa visualmente con un estilo específico dependiendo de su tipo
+     * (pared o suelo) y, si contiene un personaje, se añade una etiqueta que
+     * lo identifica.
+     *
+     * - Las celdas de tipo "pared" tienen un estilo visual distintivo.
+     * - Las celdas de tipo "suelo" tienen otro estilo visual.
+     * - Si una celda contiene un personaje, se muestra una etiqueta con:
+     *   - "P" para el protagonista (en azul).
+     *   - "E" para enemigos (en rojo).
+     *
+     * Este método utiliza un `GridPane` para organizar las celdas y actualiza
+     * dinámicamente su contenido.
+     */
     private void actualizarTablero() {
         gridTablero.getChildren().clear();
         Celda[][] celdas = juego.getTablero();

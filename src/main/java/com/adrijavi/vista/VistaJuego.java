@@ -12,12 +12,40 @@ import javafx.scene.layout.*;
 import javafx.scene.control.*;
 import javafx.scene.text.Font;
 
+/**
+ * Clase que representa la vista principal del juego, encargada de mostrar el tablero,
+ * la información del protagonista, los enemigos y el orden de turnos.
+ * Implementa la interfaz ObservadorJuego para actualizar la vista en respuesta
+ * a los cambios en el modelo del juego.
+ */
 public class VistaJuego extends BorderPane implements ObservadorJuego {
+
+    /**
+     * Referencia al modelo del juego.
+     */
     private Juego juego;
+
+    /**
+     * Panel que representa el tablero del juego.
+     */
     private GridPane gridTablero;
+
+    /**
+     * Panel que muestra información adicional del juego.
+     */
     private VBox panelInformacion;
+
+    /**
+     * Etiqueta que muestra el orden de turnos de los personajes.
+     */
     private Label labelOrdenTurnos;
 
+    /**
+     * Constructor de la clase VistaJuego.
+     * Configura el diseño inicial de la vista y la registra como observadora del juego.
+     *
+     * @param juego El modelo del juego que se va a representar.
+     */
     public VistaJuego(Juego juego) {
         this.juego = juego;
         this.juego.añadirObservador(this);
@@ -26,6 +54,10 @@ public class VistaJuego extends BorderPane implements ObservadorJuego {
         actualizarPanelInformacion();
     }
 
+    /**
+     * Configura el diseño inicial de los paneles de la vista, incluyendo el tablero
+     * y el panel de información.
+     */
     private void configurarLayout() {
         // Configuración del tablero
         gridTablero = new GridPane();
@@ -51,6 +83,10 @@ public class VistaJuego extends BorderPane implements ObservadorJuego {
         this.setRight(panelInformacion);
     }
 
+    /**
+     * Actualiza el tablero del juego en la vista, mostrando las celdas, el protagonista
+     * y otros elementos relevantes.
+     */
     public void actualizarTablero() {
         gridTablero.getChildren().clear();
         Celda[][] celdas = juego.getTablero();
@@ -80,6 +116,10 @@ public class VistaJuego extends BorderPane implements ObservadorJuego {
         }
     }
 
+    /**
+     * Actualiza el panel de información del juego, mostrando datos del protagonista,
+     * los enemigos y el orden de turnos.
+     */
     public void actualizarPanelInformacion() {
         panelInformacion.getChildren().clear();
         
@@ -128,6 +168,10 @@ public class VistaJuego extends BorderPane implements ObservadorJuego {
         panelInformacion.getChildren().add(labelOrdenTurnos);
     }
 
+    /**
+     * Método llamado cuando el modelo del juego notifica un cambio.
+     * Actualiza el tablero y el panel de información.
+     */
     @Override
     public void alActualizarJuego() {
         actualizarTablero();

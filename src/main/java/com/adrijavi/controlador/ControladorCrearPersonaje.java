@@ -18,6 +18,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 
+/**
+ * Controlador para la vista de creación de personaje.
+ * Permite al usuario asignar puntos a las estadísticas del personaje
+ * y comenzar el juego una vez que todos los puntos han sido asignados.
+ */
 public class ControladorCrearPersonaje {
 
     @FXML
@@ -33,6 +38,10 @@ public class ControladorCrearPersonaje {
     private int puntosRestantes = 15; 
     private int salud = 5, fuerza = 1, defensa = 1, velocidad = 1, percepcion = 1;
 
+    /**
+     * Método de inicialización que se ejecuta al cargar la vista.
+     * Configura los valores iniciales de las estadísticas y los eventos de los botones.
+     */
     @FXML
     public void initialize() {
         // Cargar la imagen del protagonista
@@ -79,6 +88,11 @@ public class ControladorCrearPersonaje {
         lblPercepcion.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-min-width: 30px; -fx-alignment: center;");
     }
 
+    /**
+     * Incrementa el valor de una estadística específica si hay puntos restantes.
+     * 
+     * @param estadistica Nombre de la estadística a incrementar.
+     */
     private void incrementarEstadistica(String estadistica) {
         if (puntosRestantes > 0) {
             switch (estadistica) {
@@ -108,6 +122,11 @@ public class ControladorCrearPersonaje {
         }
     }
 
+    /**
+     * Decrementa el valor de una estadística específica si no está en su valor mínimo.
+     * 
+     * @param estadistica Nombre de la estadística a decrementar.
+     */
     private void decrementarEstadistica(String estadistica) {
         switch (estadistica) {
             case "salud":
@@ -149,6 +168,11 @@ public class ControladorCrearPersonaje {
         lblPuntosRestantes.setText("Puntos restantes: " + puntosRestantes);
     }
 
+    /**
+     * Inicia el juego si todos los puntos han sido asignados.
+     * 
+     * @param event Evento de acción asociado al botón de iniciar.
+     */
     @FXML
     private void iniciarJuego(ActionEvent event) {
         if (puntosRestantes == 0) {
@@ -196,6 +220,11 @@ public class ControladorCrearPersonaje {
         }
     }
 
+    /**
+     * Muestra una alerta con un mensaje de error.
+     * 
+     * @param mensaje Mensaje a mostrar en la alerta.
+     */
     private void mostrarAlerta(String mensaje) {
         Alert alert = new Alert(Alert.AlertType.ERROR, mensaje);
         alert.showAndWait();

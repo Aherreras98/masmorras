@@ -8,6 +8,12 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import java.util.function.Consumer;
 
+/**
+ * Clase que representa la vista para crear un personaje en el juego.
+ * 
+ * Permite al usuario configurar las características del protagonista,
+ * asignando puntos a diferentes atributos y proporcionando un nombre.
+ */
 public class VistaCrearPersonaje {
     private Stage stage;
     private TextField tfNombre;
@@ -16,12 +22,20 @@ public class VistaCrearPersonaje {
     private Label lblPuntosRestantes;
     private int puntosRestantes = 15;
 
+    /**
+     * Constructor de la clase.
+     * 
+     * @param stage La ventana principal donde se mostrará la vista.
+     */
     public VistaCrearPersonaje(Stage stage) {
         this.stage = stage;
     }
 
     /**
-     * Muestra la pantalla de configuración y ejecuta la función onJugadorCreado cuando se introducen los datos correctos.
+     * Muestra la pantalla de configuración del protagonista.
+     * 
+     * @param onJugadorCreado Función que se ejecuta cuando se crea correctamente un protagonista.
+     *                        Recibe como parámetro un objeto {@link Protagonista}.
      */
     public void mostrar(Consumer<Protagonista> onJugadorCreado) {
         VBox raíz = new VBox(10);
@@ -81,6 +95,14 @@ public class VistaCrearPersonaje {
         stage.show();
     }
 
+    /**
+     * Crea un spinner para asignar puntos a un atributo del protagonista.
+     * 
+     * El spinner permite ajustar el valor del atributo y actualiza los puntos restantes.
+     * Si se exceden los puntos disponibles, el cambio no se aplica.
+     * 
+     * @return Un objeto {@link Spinner} configurado para manejar los puntos.
+     */
     private Spinner<Integer> crearSpinner() {
         Spinner<Integer> spinner = new Spinner<>(0, 20, 0);
         spinner.valueProperty().addListener((obs, oldValue, newValue) -> {
